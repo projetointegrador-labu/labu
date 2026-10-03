@@ -1,42 +1,27 @@
-from flask import Flask, render_template, request, flash, redirect, session, jsonify, g
-import sqlite3
+from flask import Flask, render_template, request, flash, redirect, session, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '4532@BWJ23pslft'
-app.config['DATABASE'] = 'labu.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///labu.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 # Banco de dados SQLite
-def get_db():
-    if 'bd' not in g:
-        g.bd = sqlite3.connect(app.config['DATABASE'],
-        detect_types = sqlite3.PARSE_DECLTYPES)
-        g.bd.row_factory = sqlite3.Row
-    return g.bd
 
-@app.teardown_appcontext
-def close_db(error):
-    db = g.pop('bd', None)
-    if db is not None:
-        db.close()
-
-def create_table():
-    db = get_db()
-    db.execute('''
-        CREATE TABLE IF NOT EXISTS usuario (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT NOT NULL,
-            senha TEXT NOT NULL,
-            tema TEXT DEFAULT '#f1f1f1',
-            img_capa TEXT DEFAULT '/static/imagens/capa.png',
-            img_perfil TEXT DEFAULT '/static/imagens/foto_usuario.png'
-        );
-    ''')
-    db.commit()
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    senha = db.Column(db.String(100), nullable=False)
+    tema = db.Column(db.String(20), default='#f1f1f1')
+    img_capa = db.Column(db.String(255), default='/static/imagens/capa.png')
+    img_perfil = db.Column(db.String(255), default='/static/imagens/foto_usuario.png')
 
 with app.app_context():
-    create_table()
-    
+    db.create_all()
+
 # Tela de login
 @app.route('/')
 def login():
@@ -48,14 +33,11 @@ def acesso():
     email = request.form.get('email')
     senha = request.form.get('senha')
     
-    db = get_db()
-    usuario = db.execute('''
-        SELECT * FROM usuario WHERE email = ? AND senha = ?
-    ''', (email, senha)).fetchone()
+    usuario = Usuario.query.filter_by(email=email, senha=senha).first()
     
     if usuario:
-        session['nome'] = usuario['nome']
-        session['email'] = email
+        session['nome'] = usuario.nome
+        session['email'] = usuario.email
         return redirect('/home')
     else:
         flash('Email ou senha incorretos. Tente novamente.', 'danger')
@@ -73,17 +55,10 @@ def cadastrando():
     email = request.form.get('email')
     senha = request.form.get('senha')
     
-    # Modelo para o inicio da página
-    tema = '#f1f1f1'
-    img_capa = '/static/imagens/capa.png'
-    img_perfil = '/static/imagens/foto_usuario.png'
+    novo_usuario = Usuario(nome=nome, email=email, senha=senha)
     
-    db = get_db()
-    db.execute('''
-        INSERT INTO usuario (nome, email, senha, tema, img_capa, img_perfil)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (nome, email, senha, tema, img_capa, img_perfil))
-    db.commit()
+    db.session.add(novo_usuario)
+    db.session.commit()
     
     session['nome'] = nome
     session['email'] = email

@@ -48,8 +48,13 @@ def acesso():
     email = request.form.get('email')
     senha = request.form.get('senha')
     
-    if email == 'admin' and senha == '456789':
-        return render_template('home.html')
+    db = get_db()
+    usuario = db.execute('''
+        SELECT * FROM usuario WHERE email = ? AND senha = ?
+    ''', (email, senha)).fetchone()
+    
+    if usuario:
+        return redirect('/home')
     else:
         flash('Email ou senha incorretos. Tente novamente.', 'danger')
         return redirect('/')
@@ -71,9 +76,19 @@ def cadastrando():
     img_capa = '/static/imagens/capa.png'
     img_perfil = '/static/imagens/foto_usuario.png'
     
-    return redirect('/cadastro')
+    db = get_db()
+    db.execute('''
+        INSERT INTO usuario (nome, email, senha, tema, img_capa, img_perfil)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (nome, email, senha, tema, img_capa, img_perfil))
+    db.commit()
+    
+    flash('Cadastro realizado com sucesso! Seja bem-vindo, {nome}!', 'success')
+    return redirect('/home')
 
-
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 
 

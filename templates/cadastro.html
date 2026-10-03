@@ -9,22 +9,26 @@
 </head>
 <body>
     <h1>LABU</h1>
-    <form action="/acesso" method="post">
-        <h1>Login</h1>
+    <form action="/cadastrando" method="post">
+        <h1>Cadastro</h1>
         {% set menssagens = get_flashed_messages() %}
         {% if menssagens %}
             <div id="alerta" style="font-size: 15px;">
                 {{menssagens[0]}}
             </div>
         {% endif %}
+        <label for="username">Nome</label>
+        <input type="text" class="input-form" name="username" id="username">
         <label for="email">Email</label>
-        <input type="text" name="email" id="email">
+        <input type="email" class="input-form" name="email" id="email">
         <label for="senha">Senha</label>
-        <input type="password" name="senha" id="senha">
-        
+        <input type="password" class="input-form" name="senha" id="senha">
+        <label for="confirmarSenha">Confirmar Senha</label>
+        <input type="password" class="input-form" name="confirmarSenha" id="confirmarSenha">
+
         <div class="button-container">
-            <button type="submit">Entrar</button>
-            <button><a href="/cadastro" style="text-decoration:none;" class="btn-login">Cadastre-se</a></button>
+            <button type="submit">Cadastrar</button>
+            <button><a href="/" style="text-decoration:none;">Login</a></button>
         </div>    
     </form>    
 

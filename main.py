@@ -54,6 +54,8 @@ def acesso():
     ''', (email, senha)).fetchone()
     
     if usuario:
+        session['nome'] = usuario['nome']
+        session['email'] = email
         return redirect('/home')
     else:
         flash('Email ou senha incorretos. Tente novamente.', 'danger')
@@ -83,14 +85,25 @@ def cadastrando():
     ''', (nome, email, senha, tema, img_capa, img_perfil))
     db.commit()
     
-    flash('Cadastro realizado com sucesso! Seja bem-vindo, {nome}!', 'success')
+    session['nome'] = nome
+    session['email'] = email
+
+    flash(f'Cadastro realizado com sucesso! Seja bem-vindo, {nome}!', 'success')
     return redirect('/home')
 
 @app.route('/home')
 def home():
-    return render_template('home.html')
+    email = session.get('email')
+    nome = session.get('nome')
+    
+    if not email:
+        return redirect('/')
+    return render_template('home.html', email=email, nome=nome)
 
-
+@app.route('/logout')
+def logout():    
+    session.clear()
+    return redirect('/')
 
 
 

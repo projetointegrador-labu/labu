@@ -4,13 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,
     initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
     <title>Labu: prestadores de serviços mais próximo de você</title>
 </head>
 <body>
     <h1>Bem-vindo, {{ nome }}</h1>
     <a href="/logout">Sair</a>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const dados = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    fetch('/salvar_localizacao', {
+                        method: 'POST',
+                        headrs: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    })
+                    .then(res => res.json())
+                    .then(data => console.log('Resposta do servidor:', data.mensagem))
+                    .catch(error => console.error('Erro ao enviar para o servidor:', error));
+
+                }, function(error){
+                    console.error("Erro ao obter geolocalização: ", erro.message);
+                });
+            }
+        });
+    </script>
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
 </body>
 </html>

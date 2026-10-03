@@ -27,6 +27,23 @@ with app.app_context():
 def login():
     return render_template('login.html')
 
+@app.route('/salvar_localizacao', methods=['POST'])
+def salvar_localizacao():
+    dados = request.get_json(force=True)
+    
+    if not dados:
+        return jsonify({'status': 'erro', 'mensagem': 'Dados de localização não fornecidos.'}), 400
+    
+    latitude = dados.get('latitude')
+    longitude = dados.get('longitude')
+    
+    session['latitude'] = latitude
+    session['longitude'] = longitude
+    
+    print(f'Latitude: {session["latitude"]}, Longitude: {session["longitude"]}')
+
+    return jsonify({'status': 'sucesso', 'mensagem': 'Localização salva com sucesso!', 'success': True})
+
 # Tela de acesso
 @app.route('/acesso' , methods=['POST'])
 def acesso():
@@ -36,6 +53,7 @@ def acesso():
     usuario = Usuario.query.filter_by(email=email, senha=senha).first()
     
     if usuario:
+        session['id'] = usuario.id
         session['nome'] = usuario.nome
         session['email'] = usuario.email
         return redirect('/home')
@@ -64,17 +82,23 @@ def cadastrando():
     session['email'] = email
 
     flash(f'Cadastro realizado com sucesso! Seja bem-vindo, {nome}!', 'success')
+    session['id'] = novo_usuario.id
     return redirect('/home')
 
 @app.route('/home')
 def home():
-    email = session.get('email')
-    nome = session.get('nome')
-    
-    if not email:
+    if 'id'in session:
+        id = session.get('id')
+        email = session.get('email')
+        nome = session.get('nome')
+        tema = session.get('tema')
+        img_capa = session.get('img_capa')
+        img_perfil = session.get('img_perfil')
+        return render_template('home.html',id=id, email=email, nome=nome, tema=tema, img_capa=img_capa, img_perfil=img_perfil)
+    else:
+        flash('Faça login para acessar sua conta.', 'danger')
         return redirect('/')
-    return render_template('home.html', email=email, nome=nome)
-
+    
 @app.route('/logout')
 def logout():    
     session.clear()

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    name: Testes (pytest + SQLite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  mysql:
+    name: Integração com MySQL 8
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: labu
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      MYSQL_URL: mysql://root:root@127.0.0.1:3306/labu
+      SECRET_KEY: ci-secret
+      ADMIN_EMAIL: admin@labu.local
+      ADMIN_PASSWORD: CiSenha12345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Criar tabelas no MySQL (idempotente - roda duas vezes)
+        run: |
+          flask --app wsgi init-db
+          flask --app wsgi init-db
+          flask --app wsgi seed-demo
+      - name: Subir app e consultar /health e /api/prestadores
+        run: |
+          gunicorn wsgi:app --bind 127.0.0.1:8000 --daemon
+          sleep 4
+          curl -fsS http://127.0.0.1:8000/health
+          curl -fsS "http://127.0.0.1:8000/api/prestadores?lat=-23.76&lng=-46.69&raio=30" | tee /dev/stderr | grep -q "Carlos Almeida"
+          curl -fsS http://127.0.0.1:8000/buscar > /dev/null

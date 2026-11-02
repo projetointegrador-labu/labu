@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Encontre profissionais da construção civil{% endblock %}
+{% block conteudo %}
+<section class="hero" aria-labelledby="titulo-hero">
+  <h1 id="titulo-hero">Encontre profissionais da construção civil perto de você</h1>
+  <p class="hero__texto">Pedreiros, eletricistas, encanadores, pintores e muito mais. Busque por bairro, cidade ou pela sua localização atual.</p>
+
+  <form action="{{ url_for('main.buscar') }}" method="get" class="form-busca" id="form-busca-home">
+    <div class="grade">
+      <div class="campo">
+        <label for="categoria">Especialidade</label>
+        <select id="categoria" name="categoria">
+          <option value="">Todas</option>
+          {% for c in categorias %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="campo">
+        <label for="bairro">Bairro</label>
+        <input type="text" id="bairro" name="bairro" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="cidade">Cidade</label>
+        <input type="text" id="cidade" name="cidade" autocomplete="address-level2">
+      </div>
+    </div>
+    <input type="hidden" name="lat" id="lat"><input type="hidden" name="lng" id="lng">
+    <div class="acoes">
+      <button type="submit" class="btn btn--grande">Buscar</button>
+      <button type="button" class="btn btn--secundario btn--grande" id="btn-localizacao" hidden>Buscar perto de mim</button>
+    </div>
+    <p id="status-localizacao" class="ajuda" role="status" aria-live="polite"></p>
+  </form>
+  <p class="destaque">{{ total_prestadores }} profissional{{ '' if total_prestadores == 1 else 'is' }} cadastrado{{ '' if total_prestadores == 1 else 's' }}.</p>
+</section>
+
+<section aria-labelledby="como-funciona" class="como-funciona">
+  <h2 id="como-funciona">Como funciona</h2>
+  <ol class="passos">
+    <li><strong>Busque</strong> pela especialidade e pela região onde precisa do serviço.</li>
+    <li><strong>Compare</strong> experiência, disponibilidade, avaliações e distância.</li>
+    <li><strong>Solicite</strong> o serviço e acompanhe o histórico na plataforma.</li>
+  </ol>
+  <p>É profissional da construção civil? <a href="{{ url_for('auth.cadastro') }}">Cadastre-se gratuitamente</a> e seja encontrado por quem está perto de você.</p>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/busca.js') }}" defer></script>{% endblock %}

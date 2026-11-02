@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Meus serviços{% endblock %}
+{% block conteudo %}
+<h1>Histórico de serviços</h1>
+{% if itens %}
+<div class="tabela-rolavel" tabindex="0" role="region" aria-label="Tabela de serviços">
+<table>
+  <caption class="sr-only">Serviços {{ 'recebidos' if g.user.perfil == 'prestador' else 'solicitados' }}</caption>
+  <thead><tr>
+    <th scope="col">Data</th><th scope="col">{{ 'Contratante' if g.user.perfil == 'prestador' else 'Profissional' }}</th>
+    <th scope="col">Serviço</th><th scope="col">Status</th><th scope="col">Ações</th>
+  </tr></thead>
+  <tbody>
+  {% for s in itens %}
+    <tr>
+      <td>{{ s.criado_em|data_br }}{% if s.data_prevista %}<br><small>Previsto: {{ s.data_prevista|data_br }}</small>{% endif %}</td>
+      <td>{{ s.outra_parte }}</td>
+      <td><strong>{{ s.categoria }}</strong><br>{{ s.descricao|truncate(120) }}</td>
+      <td><span class="status status--{{ s.status }}">{{ STATUS_SERVICO[s.status] }}</span>
+          {% if s.avaliacao %}<br><small>Nota {{ s.avaliacao }}/5</small>{% endif %}</td>
+      <td>
+        {% set acoes = [] %}
+        {% if g.user.perfil == 'prestador' %}
+          {% if s.status == 'solicitado' %}{% set _ = acoes.extend([('aceito','Aceitar'),('recusado','Recusar')]) %}
+          {% elif s.status == 'aceito' %}{% set _ = acoes.extend([('concluido','Marcar como concluído')]) %}{% endif %}
+        {% elif s.status in ('solicitado','aceito') %}{% set _ = acoes.extend([('cancelado','Cancelar')]) %}{% endif %}
+        {% for novo, rotulo in acoes %}
+        <form method="post" action="{{ url_for('servicos.status', sid=s.id) }}" class="form-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="{{ novo }}">
+          <button type="submit" class="btn btn--pequeno {{ 'btn--secundario' if novo in ('recusado','cancelado') }}">{{ rotulo }}<span class="sr-only"> serviço de {{ s.criado_em|data_br }}</span></button>
+        </form>
+        {% endfor %}
+        {% if g.user.perfil == 'contratante' and s.status == 'concluido' and not s.avaliacao %}
+        <form method="post" action="{{ url_for('servicos.avaliar', sid=s.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="nota-{{ s.id }}">Nota</label>
+          <select id="nota-{{ s.id }}" name="nota" required>
+            <option value="">Escolha</option>
+            {% for n in range(5, 0, -1) %}<option value="{{ n }}">{{ n }} {{ '(ótimo)' if n == 5 }}{{ '(ruim)' if n == 1 }}</option>{% endfor %}
+          </select>
+          <label for="coment-{{ s.id }}">Comentário (opcional)</label>
+          <input type="text" id="coment-{{ s.id }}" name="comentario" maxlength="500">
+          <button type="submit" class="btn btn--pequeno">Avaliar</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="cartao">Você ainda não tem serviços registrados.
+  {% if g.user.perfil == 'contratante' %}<a href="{{ url_for('main.buscar') }}">Busque um profissional</a> para começar.{% endif %}</p>
+{% endif %}
+{% endblock %}

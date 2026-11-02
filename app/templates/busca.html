@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_campos.html" import selecao %}
+{% block titulo %}Buscar profissionais{% endblock %}
+{% block conteudo %}
+<h1>Buscar profissionais</h1>
+
+<form action="{{ url_for('main.buscar') }}" method="get" class="form-busca cartao" id="form-busca">
+  <div class="grade">
+    <div class="campo">
+      <label for="categoria">Especialidade</label>
+      <select id="categoria" name="categoria">
+        <option value="">Todas</option>
+        {% for c in categorias %}<option value="{{ c.id }}" {% if filtros.get('categoria') == c.id|string %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="campo"><label for="bairro">Bairro</label><input type="text" id="bairro" name="bairro" value="{{ filtros.get('bairro','') }}"></div>
+    <div class="campo"><label for="cidade">Cidade</label><input type="text" id="cidade" name="cidade" value="{{ filtros.get('cidade','') }}"></div>
+    <div class="campo">
+      <label for="estado">Estado</label>
+      <select id="estado" name="estado">
+        <option value="">Todos</option>
+        {% for uf in ESTADOS %}<option value="{{ uf }}" {% if filtros.get('estado','').upper() == uf %}selected{% endif %}>{{ uf }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="campo">
+      <label for="raio">Raio (km)</label>
+      <select id="raio" name="raio">
+        {% for r in (5, 10, 15, 30, 50, 100) %}<option value="{{ r }}" {% if filtros.get('raio','15') == r|string %}selected{% endif %}>{{ r }} km</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="campo campo--checkbox">
+    <input type="checkbox" id="disponibilidade" name="disponibilidade" value="imediata" {% if filtros.get('disponibilidade') == 'imediata' %}checked{% endif %}>
+    <label for="disponibilidade">Somente com início imediato</label>
+  </div>
+  <input type="hidden" name="lat" id="lat" value="{{ filtros.get('lat','') }}">
+  <input type="hidden" name="lng" id="lng" value="{{ filtros.get('lng','') }}">
+  <div class="acoes">
+    <button type="submit" class="btn">Buscar</button>
+    <button type="button" class="btn btn--secundario" id="btn-localizacao" hidden>Usar minha localização</button>
+    <a class="btn btn--link" href="{{ url_for('main.buscar') }}">Limpar filtros</a>
+  </div>
+  <p id="status-localizacao" class="ajuda" role="status" aria-live="polite">
+    {% if por_distancia %}Buscando por proximidade da sua localização.{% endif %}
+  </p>
+</form>
+
+<section aria-labelledby="titulo-resultados">
+  <h2 id="titulo-resultados" tabindex="-1">Resultados</h2>
+  <p role="status" aria-live="polite" id="contagem">
+    {{ resultados|length }} profissional{{ '' if resultados|length == 1 else 'is' }} encontrado{{ '' if resultados|length == 1 else 's' }}{% if por_distancia %}, ordenados por distância{% endif %}.
+  </p>
+
+  {% if maps_key %}
+  <div id="mapa" class="mapa" role="region" aria-label="Mapa com a localização dos profissionais encontrados. A lista abaixo traz as mesmas informações em texto." hidden></div>
+  {% endif %}
+
+  {% if resultados %}
+  <ul class="lista-cartoes">
+    {% for r in resultados %}
+    <li class="cartao">
+      <h3><a href="{{ url_for('main.prestador', uid=r.id) }}">{{ r.nome }}</a></h3>
+      <p class="tag">{{ r.categoria }}</p>
+      <p>{{ r.bairro ~ ', ' if r.bairro }}{{ r.cidade }}/{{ r.estado }}
+         {% if r.distancia_km is not none %}· <strong>{{ r.distancia_km|string|replace('.', ',') }} km de você</strong>{% endif %}</p>
+      <p>{{ r.anos_experiencia }} ano{{ '' if r.anos_experiencia == 1 else 's' }} de experiência · {{ DISPONIBILIDADES.get(r.disponibilidade, r.disponibilidade) }}</p>
+      {% if r.descricao %}<p class="descricao">{{ r.descricao|truncate(140) }}</p>{% endif %}
+      <p><a class="btn btn--secundario" href="{{ url_for('main.prestador', uid=r.id) }}">Ver perfil de {{ r.nome }}</a></p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="cartao">Nenhum profissional encontrado com esses filtros. Tente ampliar o raio ou remover algum filtro.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/busca.js') }}" defer></script>
+{% if maps_key %}<script src="{{ url_for('static', filename='js/mapa.js') }}" defer></script>{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Política de Privacidade{% endblock %}
+{% block conteudo %}
+<article class="cartao texto-longo">
+  <h1>Política de Privacidade (LGPD)</h1>
+  <p><em>Modelo inicial elaborado para o Projeto Integrador II. Revise com orientação jurídica antes de uso comercial.</em></p>
+
+  <h2>Dados que coletamos</h2>
+  <p>Nome, e-mail, telefone (opcional), senha (armazenada apenas de forma criptografada), tipo de conta e, para prestadores, especialidade, experiência, bairro, cidade, estado e localização aproximada.</p>
+
+  <h2>Para que usamos</h2>
+  <p>Para permitir o cadastro, a busca por profissionais por proximidade, o contato entre contratantes e prestadores e o registro do histórico de serviços. Dados agregados e sem identificação podem gerar relatórios estatísticos.</p>
+
+  <h2>Base legal</h2>
+  <p>Consentimento do titular, dado no momento do cadastro, e execução das funcionalidades solicitadas por você (LGPD, art. 7º, I e V).</p>
+
+  <h2>Compartilhamento</h2>
+  <p>O telefone/WhatsApp de um prestador é exibido apenas a usuários logados. Não vendemos dados. Para exibir mapas e consultar CEP, o navegador pode se comunicar com serviços de terceiros (Google Maps e ViaCEP).</p>
+
+  <h2>Seus direitos</h2>
+  <p>Você pode corrigir seus dados e excluir sua conta a qualquer momento em <a href="{{ url_for('auth.conta') }}">Minha conta</a>. A exclusão remove permanentemente seus dados, perfil e histórico.</p>
+
+  <h2>Segurança</h2>
+  <p>Senhas com hash, conexão HTTPS em produção, proteção contra CSRF e limite de tentativas de login.</p>
+
+  <h2>Contato do encarregado</h2>
+  <p>Equipe LABU — informe aqui o e-mail oficial de contato do projeto.</p>
+</article>
+{% endblock %}

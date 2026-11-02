@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo, selecao, resumo_erros %}
+{% block titulo %}Perfil profissional{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao--medio">
+  <h1>Perfil profissional</h1>
+  {% if not ja_cadastrado %}<p class="alerta alerta--aviso">Preencha os dados abaixo para aparecer nas buscas dos contratantes.</p>{% endif %}
+  {{ resumo_erros(erros) }}
+  <form method="post" novalidate id="form-prestador">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {{ selecao('categoria_id', 'Especialidade', categorias|map(attribute='id')|zip(categorias|map(attribute='nome'))|list, form.get('categoria_id'), erros, True, 'Selecione...') }}
+    <div class="campo">
+      <label for="descricao">Sobre o seu trabalho</label>
+      <p class="ajuda" id="descricao-ajuda">Conte sua experiência e os serviços que realiza (até 1000 caracteres).</p>
+      <textarea id="descricao" name="descricao" rows="5" maxlength="1000" aria-describedby="descricao-ajuda{% if erros.descricao %} descricao-erro{% endif %}">{{ form.get('descricao') or '' }}</textarea>
+      {% if erros.descricao %}<p class="erro" id="descricao-erro" role="alert">{{ erros.descricao }}</p>{% endif %}
+    </div>
+    <div class="grade">
+      {{ campo('anos_experiencia', 'Anos de experiência', form.get('anos_experiencia', 0), 'number', erros, obrigatorio=True, extra='min="0" max="70" inputmode="numeric"') }}
+      {{ selecao('disponibilidade', 'Disponibilidade', DISPONIBILIDADES.items()|list, form.get('disponibilidade'), erros, True) }}
+      {{ campo('whatsapp', 'WhatsApp com DDD', form.get('whatsapp')|telefone, 'tel', erros, extra='data-mascara="telefone" inputmode="tel"') }}
+    </div>
+
+    <fieldset>
+      <legend>Onde você atua</legend>
+      <div class="grade">
+        {{ campo('cep', 'CEP', form.get('cep'), 'text', erros, ajuda='Ao digitar o CEP, preenchemos bairro, cidade e estado.', extra='inputmode="numeric" maxlength="9" autocomplete="postal-code" data-mascara="cep"') }}
+        {{ campo('bairro', 'Bairro', form.get('bairro'), erros=erros) }}
+        {{ campo('cidade', 'Cidade', form.get('cidade'), erros=erros, obrigatorio=True, extra='autocomplete="address-level2"') }}
+        {{ selecao('estado', 'Estado', ESTADOS|zip(ESTADOS)|list, form.get('estado'), erros, True, 'UF') }}
+        {{ campo('raio_km', 'Raio de atendimento (km)', form.get('raio_km', 10), 'number', erros, obrigatorio=True, extra='min="1" max="200" inputmode="numeric"') }}
+      </div>
+
+      <div class="cartao cartao--interno">
+        <h2>Localização no mapa</h2>
+        <p class="ajuda">A localização permite que você apareça nas buscas "perto de mim". Você pode usar o GPS do aparelho{% if maps_key %} ou localizar pelo endereço informado{% endif %}. Se preferir, digite as coordenadas.</p>
+        <div class="acoes">
+          <button type="button" class="btn btn--secundario" id="btn-gps" hidden>Usar minha localização atual</button>
+          {% if maps_key %}<button type="button" class="btn btn--secundario" id="btn-geocodificar">Localizar pelo endereço</button>{% endif %}
+        </div>
+        <p id="status-localizacao" class="ajuda" role="status" aria-live="polite"></p>
+        <div class="grade">
+          {{ campo('latitude', 'Latitude', form.get('latitude'), 'text', erros, extra='inputmode="decimal"') }}
+          {{ campo('longitude', 'Longitude', form.get('longitude'), 'text', erros, extra='inputmode="decimal"') }}
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="campo campo--checkbox">
+      <input type="checkbox" id="visivel" name="visivel" value="1" {% if form.get('visivel', 1) %}checked{% endif %}>
+      <label for="visivel">Meu perfil está visível nas buscas</label>
+    </div>
+    <button type="submit" class="btn btn--grande">Salvar perfil</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/formularios.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/perfil.js') }}" defer></script>
+{% endblock %}

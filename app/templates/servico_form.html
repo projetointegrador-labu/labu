@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo, resumo_erros %}
+{% block titulo %}Solicitar serviço{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao--estreito">
+  <h1>Solicitar serviço</h1>
+  <p>Profissional: <strong>{{ p.nome }}</strong> · {{ p.categoria }}</p>
+  {{ resumo_erros(erros) }}
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="campo">
+      <label for="descricao">Descreva o serviço <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only">(obrigatório)</span></label>
+      <textarea id="descricao" name="descricao" rows="5" maxlength="1000" required {% if erros.descricao %}aria-invalid="true" aria-describedby="descricao-erro"{% endif %}>{{ form.get('descricao','') }}</textarea>
+      {% if erros.descricao %}<p class="erro" id="descricao-erro" role="alert">{{ erros.descricao }}</p>{% endif %}
+    </div>
+    {{ campo('data_prevista', 'Data prevista para início', form.get('data_prevista'), 'date', erros, ajuda='Opcional.', extra='min="' ~ hoje ~ '"') }}
+    <button type="submit" class="btn btn--grande">Enviar solicitação</button>
+    <a class="btn btn--link" href="{{ url_for('main.prestador', uid=p.id) }}">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

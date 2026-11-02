@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Administração{% endblock %}
+{% block conteudo %}
+<h1>Painel do administrador</h1>
+<ul class="indicadores">
+  <li class="cartao"><span class="indicador__n">{{ totais.usuarios }}</span><span>Usuários</span></li>
+  <li class="cartao"><span class="indicador__n">{{ totais.prestadores }}</span><span>Prestadores com perfil</span></li>
+  <li class="cartao"><span class="indicador__n">{{ totais.contratantes }}</span><span>Contratantes</span></li>
+  <li class="cartao"><span class="indicador__n">{{ totais.servicos }}</span><span>Serviços registrados</span></li>
+  <li class="cartao"><span class="indicador__n">{{ totais.concluidos }}</span><span>Serviços concluídos</span></li>
+</ul>
+<p>
+  <a class="btn" href="{{ url_for('admin.usuarios') }}">Gerenciar usuários</a>
+  <a class="btn btn--secundario" href="{{ url_for('admin.relatorios') }}">Ver relatórios</a>
+</p>
+{% endblock %}

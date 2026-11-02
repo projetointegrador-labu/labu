@@ -1,0 +1,36 @@
+{# Macros de formulário acessíveis: label associado, ajuda e erro ligados por aria-describedby #}
+{% macro campo(nome, rotulo, valor='', tipo='text', erros={}, ajuda=None, obrigatorio=False, extra='') %}
+<div class="campo{% if erros.get(nome) %} campo--erro{% endif %}">
+  <label for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only">(obrigatório)</span>{% endif %}</label>
+  {% if ajuda %}<p class="ajuda" id="{{ nome }}-ajuda">{{ ajuda }}</p>{% endif %}
+  <input type="{{ tipo }}" id="{{ nome }}" name="{{ nome }}" value="{{ valor if valor is not none else '' }}"
+         {% if obrigatorio %}required{% endif %}
+         {% if erros.get(nome) %}aria-invalid="true"{% endif %}
+         aria-describedby="{% if ajuda %}{{ nome }}-ajuda {% endif %}{% if erros.get(nome) %}{{ nome }}-erro{% endif %}"
+         {{ extra|safe }}>
+  {% if erros.get(nome) %}<p class="erro" id="{{ nome }}-erro" role="alert">{{ erros[nome] }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro selecao(nome, rotulo, opcoes, valor='', erros={}, obrigatorio=False, vazio=None) %}
+<div class="campo{% if erros.get(nome) %} campo--erro{% endif %}">
+  <label for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only">(obrigatório)</span>{% endif %}</label>
+  <select id="{{ nome }}" name="{{ nome }}" {% if obrigatorio %}required{% endif %}
+          {% if erros.get(nome) %}aria-invalid="true" aria-describedby="{{ nome }}-erro"{% endif %}>
+    {% if vazio is not none %}<option value="">{{ vazio }}</option>{% endif %}
+    {% for v, t in opcoes %}
+      <option value="{{ v }}" {% if valor|string == v|string %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select>
+  {% if erros.get(nome) %}<p class="erro" id="{{ nome }}-erro" role="alert">{{ erros[nome] }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro resumo_erros(erros) %}
+{% if erros %}
+<div class="alerta alerta--erro" role="alert" tabindex="-1" id="resumo-erros">
+  <strong>Corrija os campos abaixo para continuar:</strong>
+  <ul>{% for campo, msg in erros.items() %}<li><a href="#{{ campo }}">{{ msg }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endmacro %}

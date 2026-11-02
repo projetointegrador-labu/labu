@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Usuários{% endblock %}
+{% block conteudo %}
+<h1>Usuários</h1>
+<div class="tabela-rolavel" tabindex="0" role="region" aria-label="Tabela de usuários">
+<table>
+  <caption class="sr-only">Lista de usuários cadastrados</caption>
+  <thead><tr><th scope="col">Nome</th><th scope="col">E-mail</th><th scope="col">Tipo</th><th scope="col">Cadastro</th><th scope="col">Situação</th><th scope="col">Ação</th></tr></thead>
+  <tbody>
+  {% for u in usuarios %}
+    <tr>
+      <td>{{ u.nome }}</td><td>{{ u.email }}</td><td>{{ u.perfil }}</td><td>{{ u.criado_em|data_br }}</td>
+      <td>{{ 'Ativo' if u.ativo else 'Desativado' }}</td>
+      <td>{% if u.perfil != 'admin' %}
+        <form method="post" action="{{ url_for('admin.alternar', uid=u.id) }}" class="form-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn--pequeno btn--secundario">{{ 'Desativar' if u.ativo else 'Ativar' }}<span class="sr-only"> {{ u.nome }}</span></button>
+        </form>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Acessibilidade{% endblock %}
+{% block conteudo %}
+<article class="cartao texto-longo">
+  <h1>Acessibilidade no LABU</h1>
+  <p>O LABU foi desenvolvido seguindo as diretrizes WCAG 2.1 (nível AA) e o eMAG (Modelo de Acessibilidade em Governo Eletrônico).</p>
+  <h2>Recursos disponíveis</h2>
+  <ul>
+    <li>Barra no topo para aumentar/diminuir o texto, ativar alto contraste e reduzir animações (as escolhas ficam salvas no seu navegador).</li>
+    <li>Tradução para Libras com o VLibras (botão no canto da tela).</li>
+    <li>Navegação completa por teclado, com link "Pular para o conteúdo principal" e foco sempre visível.</li>
+    <li>Formulários com rótulos associados, mensagens de erro anunciadas por leitores de tela e resumo de erros.</li>
+    <li>Resultados de busca anunciados por região dinâmica e mapa sempre acompanhado de lista em texto.</li>
+    <li>Respeito às preferências do sistema (movimento reduzido e contraste).</li>
+  </ul>
+  <h2>Atalhos úteis</h2>
+  <p>Tab / Shift+Tab navegam entre elementos; Enter ou Espaço ativam botões; Esc fecha o widget VLibras.</p>
+  <h2>Encontrou uma barreira?</h2>
+  <p>Informe a equipe do projeto para que possamos corrigir.</p>
+</article>
+{% endblock %}

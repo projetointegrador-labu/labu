@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo, resumo_erros %}
+{% block titulo %}Criar conta{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao--estreito">
+  <h1>Criar conta</h1>
+  <p>Campos marcados com <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> são obrigatórios.</p>
+  {{ resumo_erros(erros) }}
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <fieldset class="campo {% if erros.perfil %}campo--erro{% endif %}">
+      <legend>Eu sou <span class="obrigatorio" aria-hidden="true">*</span></legend>
+      <div class="campo--checkbox"><input type="radio" id="perfil" name="perfil" value="contratante" {% if form.get('perfil','contratante') == 'contratante' %}checked{% endif %}><label for="perfil">Contratante (procuro profissionais)</label></div>
+      <div class="campo--checkbox"><input type="radio" id="perfil-prestador" name="perfil" value="prestador" {% if form.get('perfil') == 'prestador' %}checked{% endif %}><label for="perfil-prestador">Prestador de serviço (ofereço meu trabalho)</label></div>
+      {% if erros.perfil %}<p class="erro" role="alert">{{ erros.perfil }}</p>{% endif %}
+    </fieldset>
+
+    {{ campo('nome', 'Nome completo', form.get('nome'), erros=erros, obrigatorio=True, extra='autocomplete="name"') }}
+    {{ campo('email', 'E-mail', form.get('email'), 'email', erros, obrigatorio=True, extra='autocomplete="email"') }}
+    {{ campo('telefone', 'Telefone com DDD', form.get('telefone'), 'tel', erros, ajuda='Opcional. Exibido apenas para usuários logados.', extra='autocomplete="tel" inputmode="tel" data-mascara="telefone"') }}
+    {{ campo('senha', 'Senha', '', 'password', erros, ajuda='Mínimo de 8 caracteres, com letras e números.', obrigatorio=True, extra='autocomplete="new-password"') }}
+    {{ campo('confirmar', 'Confirmar senha', '', 'password', erros, obrigatorio=True, extra='autocomplete="new-password"') }}
+
+    <div class="campo campo--checkbox {% if erros.consentimento %}campo--erro{% endif %}">
+      <input type="checkbox" id="consentimento" name="consentimento" value="1" required {% if erros.consentimento %}aria-invalid="true" aria-describedby="consentimento-erro"{% endif %}>
+      <label for="consentimento">Li e aceito a <a href="{{ url_for('main.privacidade') }}" target="_blank" rel="noopener">Política de Privacidade<span class="sr-only"> (abre em nova aba)</span></a> e o tratamento dos meus dados conforme a LGPD.</label>
+    </div>
+    {% if erros.consentimento %}<p class="erro" id="consentimento-erro" role="alert">{{ erros.consentimento }}</p>{% endif %}
+
+    <button type="submit" class="btn btn--grande">Criar conta</button>
+  </form>
+  <p>Já tem conta? <a href="{{ url_for('auth.entrar') }}">Entrar</a></p>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/formularios.js') }}" defer></script>{% endblock %}

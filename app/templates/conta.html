@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo, resumo_erros %}
+{% block titulo %}Minha conta{% endblock %}
+{% block conteudo %}
+<section class="cartao cartao--estreito">
+  <h1>Minha conta</h1>
+  <p>E-mail: <strong>{{ g.user.email }}</strong> · Tipo: <strong>{{ {'prestador':'Prestador','contratante':'Contratante','admin':'Administrador'}[g.user.perfil] }}</strong></p>
+  {{ resumo_erros(erros) }}
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {{ campo('nome', 'Nome completo', request.form.get('nome', g.user.nome), erros=erros, obrigatorio=True) }}
+    {{ campo('telefone', 'Telefone com DDD', request.form.get('telefone', g.user.telefone|telefone), 'tel', erros, extra='data-mascara="telefone"') }}
+    <h2>Alterar senha <small>(opcional)</small></h2>
+    {{ campo('senha_atual', 'Senha atual', '', 'password', erros, extra='autocomplete="current-password"') }}
+    {{ campo('nova_senha', 'Nova senha', '', 'password', erros, ajuda='Mínimo de 8 caracteres, com letras e números.', extra='autocomplete="new-password"') }}
+    <button type="submit" class="btn">Salvar alterações</button>
+  </form>
+</section>
+
+{% if g.user.perfil != 'admin' %}
+<section class="cartao cartao--estreito cartao--perigo" aria-labelledby="excluir">
+  <h2 id="excluir">Excluir minha conta</h2>
+  <p>Seus dados pessoais, perfil e histórico de serviços serão apagados de forma permanente (direito de eliminação previsto na LGPD).</p>
+  <form method="post" action="{{ url_for('auth.excluir_conta') }}" data-confirmar="Tem certeza? Esta ação não pode ser desfeita.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="campo"><label for="senha_excluir">Confirme sua senha</label>
+      <input type="password" id="senha_excluir" name="senha" required autocomplete="current-password"></div>
+    <button type="submit" class="btn btn--perigo">Excluir conta definitivamente</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/formularios.js') }}" defer></script>{% endblock %}

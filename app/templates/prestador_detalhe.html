@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titulo %}{{ p.nome }} · {{ p.categoria }}{% endblock %}
+{% block conteudo %}
+<nav aria-label="Você está em"><a href="{{ url_for('main.buscar') }}">← Voltar para a busca</a></nav>
+<article class="cartao">
+  <h1>{{ p.nome }}</h1>
+  <p class="tag">{{ p.categoria }}</p>
+  <dl class="detalhes">
+    <dt>Local de atuação</dt><dd>{{ p.bairro ~ ', ' if p.bairro }}{{ p.cidade }}/{{ p.estado }} (até {{ p.raio_km }} km)</dd>
+    <dt>Experiência</dt><dd>{{ p.anos_experiencia }} ano{{ '' if p.anos_experiencia == 1 else 's' }}</dd>
+    <dt>Disponibilidade</dt><dd>{{ DISPONIBILIDADES.get(p.disponibilidade, p.disponibilidade) }}</dd>
+    <dt>Serviços concluídos na plataforma</dt><dd>{{ concluidos }}</dd>
+    <dt>Avaliação média</dt>
+    <dd>{% if media %}{{ media|string|replace('.', ',') }} de 5 ({{ avaliacoes|length }} avaliaç{{ 'ão' if avaliacoes|length == 1 else 'ões' }}){% else %}Ainda sem avaliações{% endif %}</dd>
+  </dl>
+  {% if p.descricao %}<h2>Sobre</h2><p>{{ p.descricao }}</p>{% endif %}
+
+  <h2>Contato</h2>
+  {% if g.user %}
+    {% set tel = p.whatsapp or p.telefone %}
+    {% if tel %}
+      <p>Telefone/WhatsApp: <strong>{{ tel|telefone }}</strong></p>
+      <p><a class="btn" href="https://wa.me/55{{ tel }}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp<span class="sr-only"> (abre em nova aba)</span></a></p>
+    {% else %}<p>Este profissional não informou telefone. Use a solicitação de serviço abaixo.</p>{% endif %}
+    {% if g.user.perfil == 'contratante' %}
+      <p><a class="btn btn--secundario" href="{{ url_for('servicos.novo', prestador_id=p.id) }}">Solicitar serviço</a></p>
+    {% endif %}
+  {% else %}
+    <p>Para proteger os dados dos profissionais, o contato é exibido apenas para usuários logados.</p>
+    <p><a class="btn" href="{{ url_for('auth.entrar', next=request.path) }}">Entrar</a> <a class="btn btn--secundario" href="{{ url_for('auth.cadastro') }}">Criar conta</a></p>
+  {% endif %}
+
+  {% if p.latitude is not none and p.longitude is not none %}
+  <p><a href="https://www.google.com/maps/search/?api=1&query={{ p.latitude }},{{ p.longitude }}" target="_blank" rel="noopener noreferrer">Ver região no Google Maps<span class="sr-only"> (abre em nova aba)</span></a></p>
+  {% endif %}
+</article>
+
+<section aria-labelledby="avaliacoes" class="cartao">
+  <h2 id="avaliacoes">Avaliações</h2>
+  {% if avaliacoes %}
+  <ul class="lista-simples">
+    {% for a in avaliacoes %}
+    <li>
+      <p><strong>Nota {{ a.avaliacao }} de 5</strong> · {{ a.contratante.split(' ')[0] }} · {{ a.concluido_em|data_br }}</p>
+      {% if a.comentario %}<p>{{ a.comentario }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p>Nenhuma avaliação ainda.</p>{% endif %}
+</section>
+{% endblock %}

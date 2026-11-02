@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}LABU{% endblock %} · LABU</title>
+  <meta name="description" content="LABU conecta prestadores de serviços da construção civil e contratantes, com busca por localização.">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {# carregado de forma síncrona para aplicar preferências de acessibilidade antes da pintura #}
+  <script src="{{ url_for('static', filename='js/acessibilidade.js') }}"></script>
+  <script>window.LABU = {mapsKey: {{ maps_key|tojson }}, csrf: {{ csrf_token()|tojson }}};</script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
+  <div class="barra-acessibilidade" role="region" aria-label="Opções de acessibilidade">
+    <div class="container barra-acessibilidade__inner">
+      <button type="button" class="btn-a11y" data-a11y="fonte-menos" aria-label="Diminuir tamanho do texto">A−</button>
+      <button type="button" class="btn-a11y" data-a11y="fonte-padrao" aria-label="Tamanho padrão do texto">A</button>
+      <button type="button" class="btn-a11y" data-a11y="fonte-mais" aria-label="Aumentar tamanho do texto">A+</button>
+      <button type="button" class="btn-a11y" data-a11y="contraste" aria-pressed="false">Alto contraste</button>
+      <button type="button" class="btn-a11y" data-a11y="movimento" aria-pressed="false">Reduzir animações</button>
+      <a class="btn-a11y" href="{{ url_for('main.acessibilidade') }}">Sobre acessibilidade</a>
+    </div>
+  </div>
+
+  <header class="cabecalho">
+    <div class="container cabecalho__inner">
+      <a href="{{ url_for('main.index') }}" class="logo" aria-label="LABU - página inicial">
+        <img src="{{ url_for('static', filename='img/favicon.svg') }}" alt="" width="36" height="36">
+        <span>LABU</span>
+      </a>
+      <nav aria-label="Navegação principal">
+        <ul class="menu">
+          <li><a href="{{ url_for('main.buscar') }}" {% if request.endpoint == 'main.buscar' %}aria-current="page"{% endif %}>Buscar profissionais</a></li>
+          {% if g.user %}
+            {% if g.user.perfil == 'prestador' %}
+              <li><a href="{{ url_for('prestador.perfil') }}" {% if request.endpoint == 'prestador.perfil' %}aria-current="page"{% endif %}>Meu perfil profissional</a></li>
+            {% endif %}
+            {% if g.user.perfil == 'admin' %}
+              <li><a href="{{ url_for('admin.dashboard') }}" {% if request.blueprint == 'admin' %}aria-current="page"{% endif %}>Administração</a></li>
+            {% else %}
+              <li><a href="{{ url_for('servicos.listar') }}" {% if request.blueprint == 'servicos' %}aria-current="page"{% endif %}>Meus serviços</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('auth.conta') }}" {% if request.endpoint == 'auth.conta' %}aria-current="page"{% endif %}>Minha conta</a></li>
+            <li>
+              <form method="post" action="{{ url_for('auth.sair') }}" class="form-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn--secundario">Sair</button>
+              </form>
+            </li>
+          {% else %}
+            <li><a href="{{ url_for('auth.entrar') }}">Entrar</a></li>
+            <li><a class="btn" href="{{ url_for('auth.cadastro') }}">Cadastrar-se</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo" tabindex="-1" class="container principal">
+    <div aria-live="polite" role="status" id="mensagens">
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in msgs %}
+          <p class="alerta alerta--{{ cat }}">{{ msg }}</p>
+        {% endfor %}
+      {% endwith %}
+    </div>
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>LABU · Projeto Integrador II · UNIVESP · 2026</p>
+      <p>
+        <a href="{{ url_for('main.privacidade') }}">Política de Privacidade (LGPD)</a> ·
+        <a href="{{ url_for('main.acessibilidade') }}">Acessibilidade</a>
+      </p>
+    </div>
+  </footer>
+
+  {% if vlibras %}
+  <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js" defer></script>
+  <script defer>window.addEventListener('load', function () { if (window.VLibras) { new window.VLibras.Widget('https://vlibras.gov.br/app'); } });</script>
+  {% endif %}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

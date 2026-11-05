@@ -1,4 +1,4 @@
-"""Utilitários de geolocalização (distância de Haversine e caixa delimitadora)."""
+"""Utilitários de geolocalização"""
 import math
 
 RAIO_TERRA_KM = 6371.0088

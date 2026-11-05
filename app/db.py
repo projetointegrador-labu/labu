@@ -1,8 +1,4 @@
-"""Camada de acesso a dados.
-
-Usa SQL parametrizado (placeholder %s) sobre PyMySQL em produção.
-Em desenvolvimento/testes, sem MySQL configurado, usa SQLite com o mesmo SQL.
-"""
+"""Camada de acesso a dados. """
 import re
 import sqlite3
 from pathlib import Path

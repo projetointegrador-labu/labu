@@ -1,7 +1,4 @@
-"""Dados fictícios para demonstração (não use em produção real).
-
-As imagens são ilustrações locais (static/img/demo) apenas para visualizar o layout.
-"""
+"""Dados fictícios para demonstração/testes."""
 from werkzeug.security import generate_password_hash
 
 IMG = "/static/img/demo/"
@@ -42,7 +39,8 @@ NOTAS = [5, 5, 5, 4, 5, 4, 5, 5, 4, 5]
 
 def popular_demo(db) -> int:
     cats = {c["nome"]: c["id"] for c in db.consultar("SELECT id, nome FROM categorias")}
-    senha = generate_password_hash("Demo12345")
+    import secrets
+    senha = generate_password_hash(secrets.token_urlsafe(32))
 
     cont = db.um("SELECT id FROM usuarios WHERE email = %s", ("contratante@demo.labu",))
     cont_id = cont["id"] if cont else db.executar(
@@ -55,6 +53,9 @@ def popular_demo(db) -> int:
         email = f"demo{i}@demo.labu"
         if db.um("SELECT id FROM usuarios WHERE email = %s", (email,)):
             continue
+        
+        senha = generate_password_hash(secrets.token_urlsafe(32))
+        
         uid = db.executar(
             """INSERT INTO usuarios (nome, email, senha_hash, telefone, perfil,
                                      consentimento_lgpd, consentimento_em)
@@ -80,4 +81,25 @@ def popular_demo(db) -> int:
                 (uid, cont_id, cats[cat], NOTAS[(i + k) % len(NOTAS)]),
             )
         criados += 1
+    
+    contratantes = [
+        ("Mariana Oliveira", "mariana@demo.labu"),
+        ("Roberto Santos", "roberto@demo.labu"),
+    ]
+
+    for nome, email in contratantes:
+        if db.um("SELECT id FROM usuarios WHERE email = %s", (email,)):
+            continue
+
+        senha = generate_password_hash(secrets.token_urlsafe(32))
+
+        db.executar(
+            """INSERT INTO usuarios
+               (nome, email, senha_hash, perfil,
+                consentimento_lgpd, consentimento_em)
+               VALUES (%s, %s, %s, 'contratante', 1, CURRENT_TIMESTAMP)""",
+            (nome, email, senha),
+        )
+        criados += 1
+
     return criados

@@ -22,6 +22,21 @@
       {{ campo('whatsapp', 'WhatsApp com DDD', form.get('whatsapp')|telefone, 'tel', erros, extra='data-mascara="telefone" inputmode="tel"') }}
     </div>
 
+    <div class="grade">
+      {{ campo('valor_diaria', 'Valor da diária (R$)', form.get('valor_diaria'), 'number', erros, ajuda='Opcional. Em branco = "valor a combinar".', extra='min="0" max="5000" step="10" inputmode="numeric"') }}
+      {{ campo('habilidades', 'Habilidades (separe por vírgula)', form.get('habilidades'), 'text', erros, ajuda='Até 8. Ex.: Tomadas, Iluminação, Quadro de distribuição', extra='maxlength="400"') }}
+    </div>
+
+    <fieldset>
+      <legend>Fotos de trabalhos (opcional)</legend>
+      <p class="ajuda">Informe até 3 endereços (https://…) de imagens dos seus trabalhos. O envio de arquivos será adicionado em uma versão futura.</p>
+      <div class="grade">
+        {{ campo('foto1', 'Foto 1 (URL)', form.get('foto1'), 'url', erros, extra='inputmode="url" maxlength="500"') }}
+        {{ campo('foto2', 'Foto 2 (URL)', form.get('foto2'), 'url', erros, extra='inputmode="url" maxlength="500"') }}
+        {{ campo('foto3', 'Foto 3 (URL)', form.get('foto3'), 'url', erros, extra='inputmode="url" maxlength="500"') }}
+      </div>
+    </fieldset>
+
     <fieldset>
       <legend>Onde você atua</legend>
       <div class="grade">

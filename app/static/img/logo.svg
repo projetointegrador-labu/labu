@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LABU">
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#000" stroke="#FDB913" stroke-width="3"/>
+  <g stroke="#FDB913" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 54V14"/><path d="M14 20h24"/><path d="M22 10l16 10M22 10L14 20"/>
+    <path d="M34 20v10"/><path d="M18 54h8"/><path d="M22 22l-4 8M22 30l4-8M22 38l-4 8M22 46l4-8"/>
+  </g>
+  <g fill="#FDB913"><rect x="40" y="34" width="9" height="20"/><rect x="50" y="26" width="8" height="28"/></g>
+</svg>

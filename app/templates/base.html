@@ -20,6 +20,7 @@
       <button type="button" class="btn-a11y" data-a11y="fonte-padrao" aria-label="Tamanho padrão do texto">A</button>
       <button type="button" class="btn-a11y" data-a11y="fonte-mais" aria-label="Aumentar tamanho do texto">A+</button>
       <button type="button" class="btn-a11y" data-a11y="contraste" aria-pressed="false">Alto contraste</button>
+      <button type="button" class="btn-a11y" data-a11y="tema" aria-pressed="false">Tema claro</button>
       <button type="button" class="btn-a11y" data-a11y="movimento" aria-pressed="false">Reduzir animações</button>
       <a class="btn-a11y" href="{{ url_for('main.acessibilidade') }}">Sobre acessibilidade</a>
     </div>
@@ -28,51 +29,59 @@
   <header class="cabecalho">
     <div class="container cabecalho__inner">
       <a href="{{ url_for('main.index') }}" class="logo" aria-label="LABU - página inicial">
-        <img src="{{ url_for('static', filename='img/favicon.svg') }}" alt="" width="36" height="36">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="52" height="52">
         <span>LABU</span>
       </a>
       <nav aria-label="Navegação principal">
         <ul class="menu">
-          <li><a href="{{ url_for('main.buscar') }}" {% if request.endpoint == 'main.buscar' %}aria-current="page"{% endif %}>Buscar profissionais</a></li>
+          <li><a class="pill" href="{{ url_for('main.index') }}#como-funciona">Como funciona</a></li>
+          <li><a class="pill" href="{{ url_for('main.index') }}" {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}>Início</a></li>
+          <li><a class="pill" href="{{ url_for('main.buscar') }}" {% if request.endpoint == 'main.buscar' %}aria-current="page"{% endif %}>Abrir o feed</a></li>
           {% if g.user %}
             {% if g.user.perfil == 'prestador' %}
-              <li><a href="{{ url_for('prestador.perfil') }}" {% if request.endpoint == 'prestador.perfil' %}aria-current="page"{% endif %}>Meu perfil profissional</a></li>
+              <li><a class="pill" href="{{ url_for('prestador.perfil') }}" {% if request.endpoint == 'prestador.perfil' %}aria-current="page"{% endif %}>Meu perfil profissional</a></li>
+            {% endif %}
+            {% if g.user.perfil == 'contratante' %}
+              <li><a class="pill" href="{{ url_for('favoritos.listar') }}" {% if request.blueprint == 'favoritos' %}aria-current="page"{% endif %}>Salvos</a></li>
             {% endif %}
             {% if g.user.perfil == 'admin' %}
-              <li><a href="{{ url_for('admin.dashboard') }}" {% if request.blueprint == 'admin' %}aria-current="page"{% endif %}>Administração</a></li>
+              <li><a class="pill" href="{{ url_for('admin.dashboard') }}" {% if request.blueprint == 'admin' %}aria-current="page"{% endif %}>Administração</a></li>
             {% else %}
-              <li><a href="{{ url_for('servicos.listar') }}" {% if request.blueprint == 'servicos' %}aria-current="page"{% endif %}>Meus serviços</a></li>
+              <li><a class="pill" href="{{ url_for('servicos.listar') }}" {% if request.blueprint == 'servicos' %}aria-current="page"{% endif %}>Meus serviços</a></li>
             {% endif %}
-            <li><a href="{{ url_for('auth.conta') }}" {% if request.endpoint == 'auth.conta' %}aria-current="page"{% endif %}>Minha conta</a></li>
+            <li><a class="pill" href="{{ url_for('auth.conta') }}" {% if request.endpoint == 'auth.conta' %}aria-current="page"{% endif %}>Minha conta</a></li>
             <li>
               <form method="post" action="{{ url_for('auth.sair') }}" class="form-inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn--secundario">Sair</button>
+                <button type="submit" class="pill pill--sair">Sair</button>
               </form>
             </li>
           {% else %}
-            <li><a href="{{ url_for('auth.entrar') }}">Entrar</a></li>
-            <li><a class="btn" href="{{ url_for('auth.cadastro') }}">Cadastrar-se</a></li>
+            <li><a class="pill" href="{{ url_for('auth.entrar') }}" {% if request.endpoint == 'auth.entrar' %}aria-current="page"{% endif %}>Entrar</a></li>
+            <li><a class="pill pill--destaque" href="{{ url_for('auth.cadastro') }}">Cadastrar-se</a></li>
           {% endif %}
         </ul>
       </nav>
     </div>
   </header>
 
-  <main id="conteudo" tabindex="-1" class="container principal">
-    <div aria-live="polite" role="status" id="mensagens">
-      {% with msgs = get_flashed_messages(with_categories=true) %}
-        {% for cat, msg in msgs %}
-          <p class="alerta alerta--{{ cat }}">{{ msg }}</p>
-        {% endfor %}
-      {% endwith %}
+  <main id="conteudo" tabindex="-1">
+    {% block banner %}{% endblock %}
+    <div class="container principal">
+      <div aria-live="polite" role="status" id="mensagens">
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+            <p class="alerta alerta--{{ cat }}">{{ msg }}</p>
+          {% endfor %}
+        {% endwith %}
+      </div>
+      {% block conteudo %}{% endblock %}
     </div>
-    {% block conteudo %}{% endblock %}
   </main>
 
   <footer class="rodape">
     <div class="container">
-      <p>LABU · Projeto Integrador II · UNIVESP · 2026</p>
+      <p>© Projeto Acadêmico de Projeto Integrador II · UNIVESP · 2026</p>
       <p>
         <a href="{{ url_for('main.privacidade') }}">Política de Privacidade (LGPD)</a> ·
         <a href="{{ url_for('main.acessibilidade') }}">Acessibilidade</a>

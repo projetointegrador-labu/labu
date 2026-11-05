@@ -30,9 +30,9 @@ def create_app(test_config=None):
     app.before_request(carregar_usuario)
     app.before_request(verificar_csrf)
 
-    from .blueprints import admin, api, auth, main, prestador, servicos
+    from .blueprints import admin, api, auth, favoritos, main, prestador, servicos
 
-    for bp in (main.bp, auth.bp, prestador.bp, servicos.bp, admin.bp, api.bp):
+    for bp in (main.bp, auth.bp, prestador.bp, servicos.bp, favoritos.bp, admin.bp, api.bp):
         app.register_blueprint(bp)
 
     @app.context_processor

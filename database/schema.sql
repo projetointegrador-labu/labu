@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS prestadores (
   latitude DECIMAL(9,6) NULL,
   longitude DECIMAL(9,6) NULL,
   raio_km INT NOT NULL DEFAULT 10,
+  valor_diaria DECIMAL(8,2) NULL,
   visivel TINYINT(1) NOT NULL DEFAULT 1,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -62,4 +63,29 @@ CREATE TABLE IF NOT EXISTS servicos (
   INDEX idx_serv_prestador (prestador_id),
   INDEX idx_serv_contratante (contratante_id),
   INDEX idx_serv_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS prestador_habilidades (
+  usuario_id INT NOT NULL,
+  habilidade VARCHAR(40) NOT NULL,
+  posicao INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (usuario_id, habilidade),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS prestador_fotos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  INDEX idx_fotos_usuario (usuario_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS favoritos (
+  contratante_id INT NOT NULL,
+  prestador_id INT NOT NULL,
+  criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (contratante_id, prestador_id),
+  FOREIGN KEY (contratante_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  FOREIGN KEY (prestador_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

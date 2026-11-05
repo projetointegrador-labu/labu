@@ -21,6 +21,8 @@ def prestadores():
                 "lat": r["latitude"],
                 "lng": r["longitude"],
                 "distancia_km": r["distancia_km"],
+                "valor_diaria": r["valor_diaria"],
+                "nota_media": r["nota_media"],
                 "url": url_for("main.prestador", uid=r["id"]),
             }
             for r in resultados

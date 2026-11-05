@@ -43,6 +43,22 @@ def numero(valor, minimo, maximo, padrao=None):
     return n if minimo <= n <= maximo else padrao
 
 
+def decimal_(valor, minimo, maximo):
+    """Converte para float aceitando vírgula; None se inválido/fora do intervalo."""
+    try:
+        n = float(str(valor).replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+    return n if minimo <= n <= maximo else None
+
+
+def url_imagem_valida(url: str) -> bool:
+    """Aceita apenas https:// ou caminhos internos /static/ (sem espaços)."""
+    if not url or len(url) > 500 or any(c.isspace() for c in url):
+        return False
+    return url.startswith("https://") or url.startswith("/static/")
+
+
 def coordenada(valor, minimo, maximo):
     try:
         n = float(str(valor).replace(",", "."))

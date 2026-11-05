@@ -2,7 +2,7 @@
 
 CATEGORIAS = [
     "Pedreiro",
-    "Servente",
+    "Ajudante de obra",
     "Mestre de obras",
     "Carpinteiro",
     "Eletricista",

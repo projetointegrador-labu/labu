@@ -25,7 +25,12 @@ MySQL 8 (Railway)
 | Controle de versão no GitHub + testes | `.github/workflows/ci.yml`, `tests/` |
 
 ## Modelo de dados
-`usuarios` (perfil: contratante | prestador | admin) · `categorias` · `prestadores` (1:1 com usuário prestador; localização lat/lng) · `servicos` (prestador × contratante, status e avaliação). Script completo em `database/schema.sql`.
+`usuarios` (perfil: contratante | prestador | admin) · `categorias` · `prestadores` (1:1 com usuário prestador; localização lat/lng e valor da diária) · `prestador_habilidades` · `prestador_fotos` (URLs) · `favoritos` · `servicos` (prestador × contratante, status e avaliação). Script completo em `database/schema.sql`.
 
 ## Fora do escopo (conforme delimitação do relatório)
 Pagamentos dentro da plataforma e aplicativos móveis nativos.
+
+## Observações do layout
+- Menu: "Abrir o feed" leva à busca de profissionais (`/buscar`); "Como funciona" leva à seção da página inicial.
+- Fotos de trabalhos são **URLs** (https://). O disco do Railway é efêmero; para upload de arquivos use um Volume do Railway ou um armazenamento externo (ex.: S3/Cloudinary).
+- Bancos criados por versões anteriores são atualizados automaticamente pelo `init-db` (coluna `valor_diaria` e novas tabelas).

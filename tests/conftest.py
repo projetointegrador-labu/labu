@@ -43,10 +43,11 @@ def entrar(client, email, senha="Senha1234"):
                                         "email": email, "senha": senha}, follow_redirects=True)
 
 
-def perfil_prestador(client, lat="-23.7627", lng="-46.6973", categoria=1, cidade="São Paulo"):
-    return client.post("/prestador/perfil", data={
+def perfil_prestador(client, lat="-23.7627", lng="-46.6973", categoria=1, cidade="São Paulo", **extra):
+    dados = {
         "csrf_token": token(client, "/prestador/perfil"), "categoria_id": categoria,
         "descricao": "Experiência com reformas", "anos_experiencia": 5, "disponibilidade": "imediata",
         "whatsapp": "11988887777", "cep": "04800000", "bairro": "Grajaú", "cidade": cidade,
-        "estado": "SP", "latitude": lat, "longitude": lng, "raio_km": 10, "visivel": "1"},
-        follow_redirects=True)
+        "estado": "SP", "latitude": lat, "longitude": lng, "raio_km": 10, "visivel": "1"}
+    dados.update(extra)
+    return client.post("/prestador/perfil", data=dados, follow_redirects=True)

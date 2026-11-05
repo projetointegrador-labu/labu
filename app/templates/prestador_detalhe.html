@@ -10,10 +10,21 @@
     <dt>Experiência</dt><dd>{{ p.anos_experiencia }} ano{{ '' if p.anos_experiencia == 1 else 's' }}</dd>
     <dt>Disponibilidade</dt><dd>{{ DISPONIBILIDADES.get(p.disponibilidade, p.disponibilidade) }}</dd>
     <dt>Serviços concluídos na plataforma</dt><dd>{{ concluidos }}</dd>
+    <dt>Diária</dt><dd>{% if p.valor_diaria is not none %}R$ {{ p.valor_diaria|int }} por dia{% else %}A combinar{% endif %}</dd>
     <dt>Avaliação média</dt>
     <dd>{% if media %}{{ media|string|replace('.', ',') }} de 5 ({{ avaliacoes|length }} avaliaç{{ 'ão' if avaliacoes|length == 1 else 'ões' }}){% else %}Ainda sem avaliações{% endif %}</dd>
   </dl>
   {% if p.descricao %}<h2>Sobre</h2><p>{{ p.descricao }}</p>{% endif %}
+  {% if habilidades %}
+  <h2>Habilidades</h2>
+  <ul class="chips" aria-label="Habilidades de {{ p.nome }}">{% for h in habilidades %}<li class="chip">{{ h }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if fotos %}
+  <h2>Trabalhos realizados</h2>
+  <ul class="fotos fotos--3">
+    {% for f in fotos %}<li><img src="{{ f }}" alt="Imagem {{ loop.index }} de {{ fotos|length }} de trabalhos de {{ p.nome }}" loading="lazy" width="400" height="300"></li>{% endfor %}
+  </ul>
+  {% endif %}
 
   <h2>Contato</h2>
   {% if g.user %}
@@ -23,7 +34,14 @@
       <p><a class="btn" href="https://wa.me/55{{ tel }}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp<span class="sr-only"> (abre em nova aba)</span></a></p>
     {% else %}<p>Este profissional não informou telefone. Use a solicitação de serviço abaixo.</p>{% endif %}
     {% if g.user.perfil == 'contratante' %}
-      <p><a class="btn btn--secundario" href="{{ url_for('servicos.novo', prestador_id=p.id) }}">Solicitar serviço</a></p>
+      <div class="acoes">
+        <a class="btn" href="{{ url_for('servicos.novo', prestador_id=p.id) }}">Chamar pelo site</a>
+        <form method="post" action="{{ url_for('favoritos.alternar', uid=p.id) }}" class="form-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="btn btn--secundario">{{ 'Salvo ✓ (remover)' if p.id in salvos else 'Salvar' }}</button>
+        </form>
+      </div>
     {% endif %}
   {% else %}
     <p>Para proteger os dados dos profissionais, o contato é exibido apenas para usuários logados.</p>

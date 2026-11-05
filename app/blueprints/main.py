@@ -6,6 +6,14 @@ from ..db import get_db
 bp = Blueprint("main", __name__)
 
 
+def _salvos():
+    """IDs de prestadores salvos pelo contratante logado."""
+    if g.user and g.user["perfil"] == "contratante":
+        return {r["prestador_id"] for r in get_db().consultar(
+            "SELECT prestador_id FROM favoritos WHERE contratante_id = %s", (g.user["id"],))}
+    return set()
+
+
 @bp.get("/")
 def index():
     db = get_db()
@@ -19,12 +27,15 @@ def buscar():
     db = get_db()
     categorias = db.consultar("SELECT id, nome FROM categorias ORDER BY nome")
     resultados, por_distancia = buscar_prestadores(request.args)
+    sem_local = {k: v for k, v in request.args.items() if k not in ("lat", "lng")}
     return render_template(
         "busca.html",
         categorias=categorias,
         resultados=resultados,
         por_distancia=por_distancia,
         filtros=request.args,
+        sem_local=sem_local,
+        salvos=_salvos(),
     )
 
 
@@ -51,7 +62,13 @@ def prestador(uid):
     concluidos = db.um(
         "SELECT COUNT(*) AS n FROM servicos WHERE prestador_id = %s AND status = 'concluido'", (uid,)
     )["n"]
-    return render_template("prestador_detalhe.html", p=p, avaliacoes=avaliacoes, media=media, concluidos=concluidos)
+    habilidades = [h["habilidade"] for h in db.consultar(
+        "SELECT habilidade FROM prestador_habilidades WHERE usuario_id = %s ORDER BY posicao, habilidade", (uid,))]
+    fotos = [f["url"] for f in db.consultar(
+        "SELECT url FROM prestador_fotos WHERE usuario_id = %s ORDER BY id", (uid,))]
+    return render_template("prestador_detalhe.html", p=p, avaliacoes=avaliacoes, media=media,
+                           concluidos=concluidos, habilidades=habilidades, fotos=fotos,
+                           salvos=_salvos())
 
 
 @bp.get("/privacidade")

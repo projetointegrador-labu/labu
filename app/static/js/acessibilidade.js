@@ -3,7 +3,7 @@
 (function () {
   var CHAVE = 'labu:a11y';
   var raiz = document.documentElement;
-  var prefs = { fonte: 0, contraste: false, movimento: false };
+  var prefs = { fonte: 0, contraste: false, movimento: false, claro: false };
 
   function ler() {
     try {
@@ -12,6 +12,7 @@
       prefs.contraste = salvo.contraste === true ||
         (salvo.contraste === undefined && window.matchMedia && matchMedia('(prefers-contrast: more)').matches);
       prefs.movimento = salvo.movimento === true;
+      prefs.claro = salvo.claro === true;
     } catch (e) { /* storage indisponível: usa padrões */ }
   }
   function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(prefs)); } catch (e) {} }
@@ -19,6 +20,7 @@
     if (prefs.fonte) raiz.setAttribute('data-fonte', String(prefs.fonte)); else raiz.removeAttribute('data-fonte');
     raiz.classList.toggle('alto-contraste', prefs.contraste);
     raiz.classList.toggle('sem-movimento', prefs.movimento);
+    raiz.classList.toggle('tema-claro', prefs.claro);
   }
   function anunciar(msg) {
     var r = document.getElementById('mensagens');
@@ -33,6 +35,7 @@
       botoes.forEach(function (b) {
         if (b.dataset.a11y === 'contraste') b.setAttribute('aria-pressed', String(prefs.contraste));
         if (b.dataset.a11y === 'movimento') b.setAttribute('aria-pressed', String(prefs.movimento));
+        if (b.dataset.a11y === 'tema') b.setAttribute('aria-pressed', String(prefs.claro));
       });
     }
     sincronizar();
@@ -43,6 +46,7 @@
         if (a === 'fonte-menos') { prefs.fonte = Math.max(-1, prefs.fonte - 1); msg = 'Texto menor'; }
         if (a === 'fonte-padrao') { prefs.fonte = 0; msg = 'Tamanho de texto padrão'; }
         if (a === 'contraste') { prefs.contraste = !prefs.contraste; msg = prefs.contraste ? 'Alto contraste ativado' : 'Alto contraste desativado'; }
+        if (a === 'tema') { prefs.claro = !prefs.claro; msg = prefs.claro ? 'Tema claro ativado' : 'Tema escuro ativado'; }
         if (a === 'movimento') { prefs.movimento = !prefs.movimento; msg = prefs.movimento ? 'Animações reduzidas' : 'Animações normais'; }
         aplicar(); salvar(); sincronizar(); anunciar(msg);
       });

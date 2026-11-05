@@ -1,3 +1,8 @@
+"""Camada de acesso a dados.
+
+Usa SQL parametrizado (placeholder %s) sobre PyMySQL em produção.
+Em desenvolvimento/testes, sem MySQL configurado, usa SQLite com o mesmo SQL.
+"""
 import re
 import sqlite3
 from pathlib import Path
@@ -86,6 +91,16 @@ def _sql_para_sqlite(sql: str) -> str:
     return sql
 
 
+def _garantir_colunas(db: Conexao):
+    """Migração leve: adiciona colunas novas em bancos criados por versões anteriores."""
+    if db.backend == "sqlite":
+        cols = {r["name"] for r in db.consultar("PRAGMA table_info(prestadores)")}
+    else:
+        cols = {r["Field"] for r in db.consultar("SHOW COLUMNS FROM prestadores")}
+    if "valor_diaria" not in cols:
+        db.executar("ALTER TABLE prestadores ADD COLUMN valor_diaria DECIMAL(8,2) NULL")
+
+
 def init_schema(db: Conexao):
     """Cria tabelas (se não existirem) e popula as categorias iniciais."""
     script = SCHEMA_PATH.read_text(encoding="utf-8")
@@ -98,6 +113,7 @@ def init_schema(db: Conexao):
             cur.execute(stmt)
             cur.close()
     db.raw.commit()
+    _garantir_colunas(db)
 
     existentes = {r["nome"] for r in db.consultar("SELECT nome FROM categorias")}
     for nome in CATEGORIAS:

@@ -1,0 +1,66 @@
+{# Cartão de profissional (usar com: {% from "_card.html" import card with context %}) #}
+{% macro card(r, salvos=[]) %}
+<article class="card-prof" id="prestador-{{ r.id }}" aria-labelledby="nome-{{ r.id }}">
+  <div class="card-prof__topo">
+    <span class="avatar" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="56" height="56" focusable="false"><circle cx="24" cy="24" r="24" fill="#000"/><circle cx="24" cy="18" r="8" fill="#fff"/><path d="M8 42c2-9 9-13 16-13s14 4 16 13a24 24 0 0 1-32 0z" fill="#fff"/></svg>
+    </span>
+    <div class="card-prof__id">
+      <h3 id="nome-{{ r.id }}"><a href="{{ url_for('main.prestador', uid=r.id) }}">{{ r.nome }}</a></h3>
+      <p class="card-prof__cargo">{{ r.categoria }}</p>
+      <p class="card-prof__local">{{ r.bairro ~ ', ' if r.bairro }}{{ r.cidade }}/{{ r.estado }}</p>
+    </div>
+    {% if r.distancia_km is not none %}
+    <p class="card-prof__dist"><strong>{{ r.distancia_km|string|replace('.', ',') }} km</strong><span>de você</span></p>
+    {% endif %}
+  </div>
+
+  {% if r.descricao %}<p class="card-prof__desc">{{ r.descricao|truncate(180) }}</p>{% endif %}
+
+  {% if r.habilidades %}
+  <ul class="chips" aria-label="Habilidades de {{ r.nome }}">
+    {% for h in r.habilidades %}<li class="chip">{{ h }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if r.fotos %}
+  <ul class="fotos">
+    {% for f in r.fotos[:2] %}
+    <li><img src="{{ f }}" alt="Imagem {{ loop.index }} de {{ r.fotos[:2]|length }} de trabalhos de {{ r.nome }}" loading="lazy" width="400" height="300"></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="card-prof__rodape">
+    <p class="nota">
+      {% if r.nota_media %}
+        <span class="nota__valor">{{ r.nota_media|string|replace('.', ',') }}</span>
+        <span class="estrelas" style="--nota: {{ r.nota_media }}" aria-hidden="true">★★★★★</span>
+        <span class="nota__qtd">{{ r.n_avaliacoes }} serviço{{ '' if r.n_avaliacoes == 1 else 's' }} avaliado{{ '' if r.n_avaliacoes == 1 else 's' }}</span>
+        <span class="sr-only">Nota {{ r.nota_media|string|replace('.', ',') }} de 5</span>
+      {% else %}
+        <span class="nota__qtd">Sem avaliações ainda</span>
+      {% endif %}
+    </p>
+    <p class="preco">
+      {% if r.valor_diaria is not none %}<strong>R$ {{ r.valor_diaria|int }}</strong> <span>/dia</span>{% else %}<span>Valor a combinar</span>{% endif %}
+    </p>
+  </div>
+
+  {% if not g.user or g.user.perfil == 'contratante' %}
+  <div class="card-prof__acoes">
+    {% if g.user %}
+      <form method="post" action="{{ url_for('favoritos.alternar', uid=r.id) }}" class="form-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ request.full_path }}#prestador-{{ r.id }}">
+        <button type="submit" class="btn btn--bloco">{% if r.id in salvos %}Salvo ✓<span class="sr-only"> — remover {{ r.nome }} dos salvos</span>{% else %}Salvar<span class="sr-only"> {{ r.nome }}</span>{% endif %}</button>
+      </form>
+      <a class="btn btn--bloco" href="{{ url_for('servicos.novo', prestador_id=r.id) }}">Chamar pelo site<span class="sr-only"> {{ r.nome }}</span></a>
+    {% else %}
+      <a class="btn btn--bloco" href="{{ url_for('auth.entrar', next=request.full_path) }}">Salvar<span class="sr-only"> {{ r.nome }} (exige login)</span></a>
+      <a class="btn btn--bloco" href="{{ url_for('auth.entrar', next=url_for('servicos.novo', prestador_id=r.id)) }}">Chamar pelo site<span class="sr-only"> {{ r.nome }} (exige login)</span></a>
+    {% endif %}
+  </div>
+  {% endif %}
+</article>
+{% endmacro %}

@@ -1,6 +1,20 @@
-# Created by venv; see https://docs.python.org/3/library/venv.html
-venv/
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Ambiente / segredos
 .env
+.env.*
+!.env.example
+
+# Banco local de desenvolvimento
+*.db
+*.sqlite3
+
+# IDEs / SO
+.vscode/
+.idea/
+.DS_Store

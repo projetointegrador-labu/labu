@@ -1,79 +1,129 @@
 {% extends "base.html" %}
-{% from "_campos.html" import selecao %}
-{% block titulo %}Buscar profissionais{% endblock %}
-{% block conteudo %}
-<h1>Buscar profissionais</h1>
+{% from "_card.html" import card with context %}
+{% block titulo %}Profissionais perto de você{% endblock %}
 
-<form action="{{ url_for('main.buscar') }}" method="get" class="form-busca cartao" id="form-busca">
-  <div class="grade">
-    <div class="campo">
-      <label for="categoria">Especialidade</label>
-      <select id="categoria" name="categoria">
-        <option value="">Todas</option>
-        {% for c in categorias %}<option value="{{ c.id }}" {% if filtros.get('categoria') == c.id|string %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}
-      </select>
+{% block banner %}
+<section class="banner" aria-labelledby="titulo-pagina">
+  <div class="container banner__inner">
+    <div>
+      <h1 id="titulo-pagina">Profissionais perto de você</h1>
+      <p class="banner__sub">
+        {% if por_distancia %}Mostrando a partir da sua localização.
+        {% elif filtros.get('q') or filtros.get('cidade') or filtros.get('bairro') %}Mostrando resultados para “{{ filtros.get('q') or filtros.get('bairro') or filtros.get('cidade') }}”.
+        {% else %}Mostrando os profissionais cadastrados. Use “Usar minha localização” para ver os mais próximos.{% endif %}
+      </p>
     </div>
-    <div class="campo"><label for="bairro">Bairro</label><input type="text" id="bairro" name="bairro" value="{{ filtros.get('bairro','') }}"></div>
-    <div class="campo"><label for="cidade">Cidade</label><input type="text" id="cidade" name="cidade" value="{{ filtros.get('cidade','') }}"></div>
-    <div class="campo">
-      <label for="estado">Estado</label>
-      <select id="estado" name="estado">
-        <option value="">Todos</option>
-        {% for uf in ESTADOS %}<option value="{{ uf }}" {% if filtros.get('estado','').upper() == uf %}selected{% endif %}>{{ uf }}</option>{% endfor %}
-      </select>
-    </div>
-    <div class="campo">
-      <label for="raio">Raio (km)</label>
-      <select id="raio" name="raio">
-        {% for r in (5, 10, 15, 30, 50, 100) %}<option value="{{ r }}" {% if filtros.get('raio','15') == r|string %}selected{% endif %}>{{ r }} km</option>{% endfor %}
-      </select>
-    </div>
+    {% if g.user %}<p class="boas-vindas">Bem-vindo, {{ g.user.nome.split(' ')[0] }}!</p>{% endif %}
   </div>
-  <div class="campo campo--checkbox">
-    <input type="checkbox" id="disponibilidade" name="disponibilidade" value="imediata" {% if filtros.get('disponibilidade') == 'imediata' %}checked{% endif %}>
-    <label for="disponibilidade">Somente com início imediato</label>
-  </div>
-  <input type="hidden" name="lat" id="lat" value="{{ filtros.get('lat','') }}">
-  <input type="hidden" name="lng" id="lng" value="{{ filtros.get('lng','') }}">
-  <div class="acoes">
-    <button type="submit" class="btn">Buscar</button>
-    <button type="button" class="btn btn--secundario" id="btn-localizacao" hidden>Usar minha localização</button>
-    <a class="btn btn--link" href="{{ url_for('main.buscar') }}">Limpar filtros</a>
-  </div>
-  <p id="status-localizacao" class="ajuda" role="status" aria-live="polite">
-    {% if por_distancia %}Buscando por proximidade da sua localização.{% endif %}
-  </p>
-</form>
-
-<section aria-labelledby="titulo-resultados">
-  <h2 id="titulo-resultados" tabindex="-1">Resultados</h2>
-  <p role="status" aria-live="polite" id="contagem">
-    {{ resultados|length }} profissional{{ '' if resultados|length == 1 else 'is' }} encontrado{{ '' if resultados|length == 1 else 's' }}{% if por_distancia %}, ordenados por distância{% endif %}.
-  </p>
-
-  {% if maps_key %}
-  <div id="mapa" class="mapa" role="region" aria-label="Mapa com a localização dos profissionais encontrados. A lista abaixo traz as mesmas informações em texto." hidden></div>
-  {% endif %}
-
-  {% if resultados %}
-  <ul class="lista-cartoes">
-    {% for r in resultados %}
-    <li class="cartao">
-      <h3><a href="{{ url_for('main.prestador', uid=r.id) }}">{{ r.nome }}</a></h3>
-      <p class="tag">{{ r.categoria }}</p>
-      <p>{{ r.bairro ~ ', ' if r.bairro }}{{ r.cidade }}/{{ r.estado }}
-         {% if r.distancia_km is not none %}· <strong>{{ r.distancia_km|string|replace('.', ',') }} km de você</strong>{% endif %}</p>
-      <p>{{ r.anos_experiencia }} ano{{ '' if r.anos_experiencia == 1 else 's' }} de experiência · {{ DISPONIBILIDADES.get(r.disponibilidade, r.disponibilidade) }}</p>
-      {% if r.descricao %}<p class="descricao">{{ r.descricao|truncate(140) }}</p>{% endif %}
-      <p><a class="btn btn--secundario" href="{{ url_for('main.prestador', uid=r.id) }}">Ver perfil de {{ r.nome }}</a></p>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="cartao">Nenhum profissional encontrado com esses filtros. Tente ampliar o raio ou remover algum filtro.</p>
-  {% endif %}
 </section>
 {% endblock %}
+
+{% block conteudo %}
+<div class="busca-layout">
+  <aside class="painel-filtros" aria-labelledby="titulo-filtros">
+    <form action="{{ url_for('main.buscar') }}" method="get" id="form-busca">
+      <h2 id="titulo-filtros">Filtros</h2>
+
+      <div class="campo">
+        <label for="q">Cidade, função ou habilidade</label>
+        <input type="search" id="q" name="q" value="{{ filtros.get('q','') }}" placeholder="ex: Itaquera, mestre de obras" autocomplete="off">
+      </div>
+
+      <input type="hidden" name="lat" id="lat" value="{{ filtros.get('lat','') if por_distancia else '' }}">
+      <input type="hidden" name="lng" id="lng" value="{{ filtros.get('lng','') if por_distancia else '' }}">
+      <button type="button" class="btn btn--bloco" id="btn-localizacao" hidden>Usar minha localização</button>
+      <p id="status-localizacao" class="ajuda" role="status" aria-live="polite">
+        {% if por_distancia %}Usando sua localização. <a href="{{ url_for('main.buscar', **sem_local) }}">Remover localização</a>{% endif %}
+      </p>
+
+      <div class="campo">
+        <label for="disponibilidade">Disponibilidade</label>
+        <select id="disponibilidade" name="disponibilidade">
+          <option value="">Todas</option>
+          {% for chave in ('imediata', 'semana', 'mes') %}
+            <option value="{{ chave }}" {% if filtros.get('disponibilidade') == chave %}selected{% endif %}>{{ DISPONIBILIDADES[chave] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="raio">Distância máxima</label>
+        <select id="raio" name="raio" aria-describedby="raio-ajuda">
+          <option value="">Qualquer distância</option>
+          {% for r in (5, 10, 15, 30, 50) %}<option value="{{ r }}" {% if filtros.get('raio') == r|string %}selected{% endif %}>Até {{ r }} km</option>{% endfor %}
+        </select>
+        <p class="ajuda" id="raio-ajuda">Funciona junto com “Usar minha localização”.</p>
+      </div>
+
+      <fieldset class="filtro-chips">
+        <legend>Função</legend>
+        <div class="chips-filtro">
+          <span class="chip-opcao">
+            <input type="radio" id="cat-0" name="categoria" value="" {% if not filtros.get('categoria') %}checked{% endif %}>
+            <label for="cat-0">Todas</label>
+          </span>
+          {% for c in categorias %}
+          <span class="chip-opcao">
+            <input type="radio" id="cat-{{ c.id }}" name="categoria" value="{{ c.id }}" {% if filtros.get('categoria') == c.id|string %}checked{% endif %}>
+            <label for="cat-{{ c.id }}">{{ c.nome }}</label>
+          </span>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      {% set dmax = filtros.get('diaria_max', '500')|int(500) %}
+      <div class="campo">
+        <label for="diaria_max">Diária até <output id="diaria-saida" for="diaria_max">{{ 'qualquer valor' if dmax >= 500 else 'R$ ' ~ dmax }}</output></label>
+        <input type="range" id="diaria_max" name="diaria_max" min="50" max="500" step="10" value="{{ dmax }}" aria-describedby="diaria-ajuda">
+        <p class="ajuda" id="diaria-ajuda">No máximo, mostra qualquer valor (inclusive “a combinar”).</p>
+      </div>
+
+      <div class="campo">
+        <label for="nota_min">Avaliação mínima</label>
+        <select id="nota_min" name="nota_min">
+          <option value="">Qualquer</option>
+          {% for v, t in (('3', '3 estrelas ou mais'), ('4', '4 estrelas ou mais'), ('4.5', '4,5 estrelas ou mais')) %}
+            <option value="{{ v }}" {% if filtros.get('nota_min') == v %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="acoes acoes--coluna">
+        <button type="submit" class="btn btn--bloco">Aplicar filtros</button>
+        <a class="btn btn--secundario btn--bloco" href="{{ url_for('main.buscar') }}">Limpar filtros</a>
+      </div>
+    </form>
+  </aside>
+
+  <section class="resultados" aria-labelledby="titulo-resultados">
+    <div class="resultados__topo">
+      <h2 id="titulo-resultados" role="status" aria-live="polite">{{ resultados|length }} profissiona{{ 'l' if resultados|length == 1 else 'is' }} encontrado{{ '' if resultados|length == 1 else 's' }}</h2>
+      <div class="ordenar">
+        <label for="ordem" class="sr-only">Ordenar por</label>
+        <select id="ordem" name="ordem" form="form-busca" aria-describedby="ordem-ajuda">
+          <option value="perto" {% if filtros.get('ordem','perto') == 'perto' %}selected{% endif %}>Mais perto</option>
+          <option value="nota" {% if filtros.get('ordem') == 'nota' %}selected{% endif %}>Melhor avaliados</option>
+          <option value="preco" {% if filtros.get('ordem') == 'preco' %}selected{% endif %}>Menor diária</option>
+        </select>
+        <span class="sr-only" id="ordem-ajuda">A lista é atualizada ao escolher uma opção.</span>
+      </div>
+    </div>
+
+    {% if maps_key %}
+    <div id="mapa" class="mapa" role="region" aria-label="Mapa com a localização dos profissionais. A lista abaixo traz as mesmas informações em texto." hidden></div>
+    {% endif %}
+
+    {% if resultados %}
+      <ul class="lista-prof">
+        {% for r in resultados %}<li>{{ card(r, salvos) }}</li>{% endfor %}
+      </ul>
+    {% else %}
+      <p class="cartao">Nenhum profissional encontrado com esses filtros. Tente ampliar a distância, aumentar a diária máxima ou limpar os filtros.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/busca.js') }}" defer></script>
 {% if maps_key %}<script src="{{ url_for('static', filename='js/mapa.js') }}" defer></script>{% endif %}

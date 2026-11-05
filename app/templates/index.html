@@ -1,27 +1,25 @@
 {% extends "base.html" %}
 {% block titulo %}Encontre profissionais da construção civil{% endblock %}
-{% block conteudo %}
-<section class="hero" aria-labelledby="titulo-hero">
-  <h1 id="titulo-hero">Encontre profissionais da construção civil perto de você</h1>
-  <p class="hero__texto">Pedreiros, eletricistas, encanadores, pintores e muito mais. Busque por bairro, cidade ou pela sua localização atual.</p>
 
-  <form action="{{ url_for('main.buscar') }}" method="get" class="form-busca" id="form-busca-home">
-    <div class="grade">
-      <div class="campo">
-        <label for="categoria">Especialidade</label>
-        <select id="categoria" name="categoria">
-          <option value="">Todas</option>
-          {% for c in categorias %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
-        </select>
-      </div>
-      <div class="campo">
-        <label for="bairro">Bairro</label>
-        <input type="text" id="bairro" name="bairro" autocomplete="off">
-      </div>
-      <div class="campo">
-        <label for="cidade">Cidade</label>
-        <input type="text" id="cidade" name="cidade" autocomplete="address-level2">
-      </div>
+{% block banner %}
+<section class="banner" aria-labelledby="titulo-hero">
+  <div class="container banner__inner">
+    <div>
+      <h1 id="titulo-hero">Encontre profissionais da construção civil perto de você</h1>
+      <p class="banner__sub">Pedreiros, eletricistas, encanadores, pintores e muito mais — {{ total_prestadores }} profissiona{{ 'l cadastrado' if total_prestadores == 1 else 'is cadastrados' }}.</p>
+    </div>
+    {% if g.user %}<p class="boas-vindas">Bem-vindo, {{ g.user.nome.split(' ')[0] }}!</p>{% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block conteudo %}
+<section class="cartao" aria-labelledby="titulo-busca-home">
+  <h2 id="titulo-busca-home">O que você precisa?</h2>
+  <form action="{{ url_for('main.buscar') }}" method="get" id="form-busca-home">
+    <div class="campo">
+      <label for="q">Cidade, função ou habilidade</label>
+      <input type="search" id="q" name="q" placeholder="ex: Itaquera, mestre de obras" autocomplete="off">
     </div>
     <input type="hidden" name="lat" id="lat"><input type="hidden" name="lng" id="lng">
     <div class="acoes">
@@ -30,15 +28,19 @@
     </div>
     <p id="status-localizacao" class="ajuda" role="status" aria-live="polite"></p>
   </form>
-  <p class="destaque">{{ total_prestadores }} profissional{{ '' if total_prestadores == 1 else 'is' }} cadastrado{{ '' if total_prestadores == 1 else 's' }}.</p>
+
+  <h3>Ou escolha uma função</h3>
+  <ul class="chips chips--links">
+    {% for c in categorias %}<li><a class="chip chip--link" href="{{ url_for('main.buscar', categoria=c.id) }}">{{ c.nome }}</a></li>{% endfor %}
+  </ul>
 </section>
 
-<section aria-labelledby="como-funciona" class="como-funciona">
-  <h2 id="como-funciona">Como funciona</h2>
+<section aria-labelledby="como-funciona-titulo" id="como-funciona" class="cartao">
+  <h2 id="como-funciona-titulo">Como funciona</h2>
   <ol class="passos">
-    <li><strong>Busque</strong> pela especialidade e pela região onde precisa do serviço.</li>
-    <li><strong>Compare</strong> experiência, disponibilidade, avaliações e distância.</li>
-    <li><strong>Solicite</strong> o serviço e acompanhe o histórico na plataforma.</li>
+    <li><strong>Busque</strong> pela função e pela região onde precisa do serviço.</li>
+    <li><strong>Compare</strong> habilidades, diária, avaliações e distância.</li>
+    <li><strong>Chame pelo site</strong> e acompanhe o histórico dos serviços na plataforma.</li>
   </ol>
   <p>É profissional da construção civil? <a href="{{ url_for('auth.cadastro') }}">Cadastre-se gratuitamente</a> e seja encontrado por quem está perto de você.</p>
 </section>

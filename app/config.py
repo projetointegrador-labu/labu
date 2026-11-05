@@ -10,7 +10,7 @@ def _is_production() -> bool:
 
 
 def _mysql_settings():
-    """Lê a conexão MySQL de MYSQL_URL / DATABASE_URL Railway."""
+    """Lê a conexão MySQL de MYSQL_URL / DATABASE_URL ou das variáveis MYSQL* do Railway."""
     for name in ("MYSQL_URL", "DATABASE_URL", "MYSQL_PUBLIC_URL"):
         url = os.environ.get(name, "")
         if url.startswith("mysql"):
